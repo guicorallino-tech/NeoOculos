@@ -2,24 +2,32 @@ name: Bling ETL to Supabase
 
 on:
   schedule:
-    # 06:30 UTC ≈ 03:30 America/Sao_Paulo (ajuste se quiser)
-    - cron: '30 6 * * *'
-  workflow_dispatch: {}   # permite rodar manualmente
+    - cron: '30 6 * * *'   # 03:30 BRT aprox.
+  workflow_dispatch: {}
 
 jobs:
   run-etl:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Show repo files (debug)
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 4 -type f -name "bling_to_supabase.py" -print
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Install deps
         run: pip install requests psycopg2-binary
+
       - name: Run ETL
         env:
           BLING_CLIENT_ID:     ${{ secrets.BLING_CLIENT_ID }}
           BLING_CLIENT_SECRET: ${{ secrets.BLING_CLIENT_SECRET }}
           BLING_REFRESH_TOKEN: ${{ secrets.BLING_REFRESH_TOKEN }}
           SUPABASE_DB_URL:     ${{ secrets.SUPABASE_DB_URL }}
-        run: python bling_to_supabase.py
+        run: python .github/workflows/bling_to_supabase.py
